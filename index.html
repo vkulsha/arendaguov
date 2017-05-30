@@ -116,9 +116,9 @@ function markerClickFunc(val){
 	frm.zIndex = 100010;
 	frm.visible = true;
 
-	var arrD = getOrm("select address, emptySquare, target, context, transport from "+mainTable+" where id = "+val.oid, "all2object").data;
+	var arrD = getOrm("select address, emptySquare, target, context, transport, contact from "+mainTable+" where id = "+val.oid, "all2object").data;
 	tb = div.appendChild(cDom("TABLE"));
-	arrH = ["Адрес объекта", "Свободная площадь, кв.м.", "Назначение", "Примечание", "Транспортная доступность"];
+	arrH = ["Адрес объекта", "Свободная площадь, кв.м.", "Назначение", "Примечание", "Транспортная доступность", "Контактное лицо"];
 	
 	fillCardFromArray(tb, "Объект:", arrH, arrD[0]);
 	
