@@ -20,6 +20,8 @@ $(document).ready(function(){
 		logo.style.left = windowWidth()-parseInt(logo.style.width)-5+"px";
 
 		var map = L.map('map');
+		var pMain = gDom("pMain");
+		pMain.style.height = windowHeight()-250+"px";
 		var mapObjects = initMap(map);
 		pObjects = gDom("pObjects");
 		loadMainListOfObjects(map);
