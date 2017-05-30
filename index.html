@@ -69,7 +69,8 @@ function ifn(str) {
 
 function fillCardFromArray(cont, H, arrH, arrD) {
 	for (var i=0; i < arrH.length; i++) {
-		$(cont).append("<tr><td style='border-bottom:1px solid #333; color:#eee; font-weight:bold'>"+arrH[i]+"</td><td style='border-bottom:1px solid #333; color:#eee'>"+ifn(arrD[i])+"</td></tr>");
+		if (arrD[i])
+			$(cont).append("<tr><td style='border-bottom:1px solid #333; color:#eee; font-weight:bold'>"+arrH[i]+"</td><td style='border-bottom:1px solid #333; color:#eee'>"+ifn(arrD[i])+"</td></tr>");
 	}
 }
 
