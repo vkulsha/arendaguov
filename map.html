@@ -1,0 +1,467 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta http-equiv="Cache-Control" content="no-cache" />
+		
+		<link rel="shortcut icon" href="/images/logo.png" type="image/png">
+		<link rel="stylesheet" href="css/leaflet.css" />
+		<link rel="stylesheet" href="css/main.css" />
+
+		<script src="js/jquery-2.2.0.min.js"></script>
+		<script src="js/leaflet.js"></script>		
+		<script src="js/uService.js"></script>
+		<script src="js/objectlink.js"></script></head>
+
+<script>
+
+$(document).ready(function(){
+		mainTable = "arenda";
+		var logo = gDom("logo");
+		logo.style.left = windowWidth()-parseInt(logo.style.width)-5+"px";
+		
+		var map = L.map('map');
+		var pMain = gDom("pMain");
+		pMain.style.height = windowHeight()-250+"px";
+		var mapObjects = initMap(map);
+		pObjects = gDom("pObjects");
+		loadMainListOfObjects(map);
+		
+		eSearch = gDom("addressSearch");
+		eSearch.focus();
+		filterEmptySquareFrom = gDom("filterEmptySquareFrom");
+		filterEmptySquareTo = gDom("filterEmptySquareTo");
+		var sqFrom = 0;
+		var sqTo = 10000000;
+		funcChange = function() {
+			var val = this.value || (this.id == "filterEmptySquareFrom" ? 0 : 10000000);
+			sqFrom = this.id == "filterEmptySquareFrom" ? val : sqFrom;
+			sqTo = this.id == "filterEmptySquareTo" ? val : sqTo;
+			loadMainListOfObjects(map, "and emptySquare between "+sqFrom+" and "+sqTo);
+			mapObjects.markers.clearLayers();
+			mapObjects = initMap(map, "and emptySquare between "+sqFrom+" and "+sqTo);
+		}
+		filterEmptySquareFrom.onchange = funcChange;
+		filterEmptySquareTo.onchange = funcChange;
+
+		var addressMarker = L.marker([0, 0]);
+		addressMarker = markerAddToMap(map, [0, 0], "images/marker21.png", 32);
+		eSearch.onkeydown = function(e){
+			if (e.which == 13) {
+				if (this.value == "") {
+					loadMainListOfObjects(map);
+					return;
+				}
+				var coord = searchAddress(this.value);
+				addressMarker.setOpacity(0);
+				if (coord) {
+					addressMarker.setLatLng([coord[1], coord[0]]);
+					addressMarker.setOpacity(1);
+					map.setView([coord[1], coord[0]],18);
+				}
+			}
+		}
+		
+})
+
+function ifn(str) {
+	return str == null ? "" : str;
+}
+
+function fillCardFromArray(cont, H, arrH, arrD) {
+	for (var i=0; i < arrH.length; i++) {
+		if (arrD[i])
+			$(cont).append("<tr><td style='border-bottom:1px solid #333; color:#eee; font-weight:bold'>"+arrH[i]+"</td><td style='border-bottom:1px solid #333; color:#eee'>"+ifn(arrD[i])+"</td></tr>");
+	}
+}
+
+function initMap(map, cond){
+	cond = cond || "";
+	L.tileLayer( '//mt{s}.googleapis.com/vt?lyrs=s,h&x={x}&y={y}&z={z}',
+	{
+	  maxZoom: 18,
+	  subdomains: [ 0, 1, 2, 3 ]
+	} ).addTo( map );
+	
+	var cont = map.getContainer();
+	cont.style.height = "100%";
+	cont.style.width = "100%";
+	
+	var markers = L.layerGroup();
+
+	var markerClick = markerClickFunc;	
+	var arrObjects = getOrm("select lat, lon, id, null from "+mainTable+" where 1=1 "+cond, "all2object").data;
+	var mapObjects = mapLoad(arrObjects, {}, markerClick);
+	markers.clearLayers();
+	markers = mapObjects.markers;
+	markers.addTo(map);
+	if (!cond) {
+		map.fitBounds([
+			[mapObjects.bounds.minLat, mapObjects.bounds.minLon],
+			[mapObjects.bounds.maxLat, mapObjects.bounds.maxLon]
+		]);
+	}
+	
+	return mapObjects;
+	
+	
+}
+
+function markerClickFunc(val){
+	console.log(val.oid);
+	var div = cDom("DIV");
+
+	var frm = new TForm();
+	frm.body = div;
+	frm.top = "20px";
+	frm.zIndex = 100010;
+	frm.visible = true;
+
+	var arrD = getOrm("select address, emptySquare, target, context, transport, contact from "+mainTable+" where id = "+val.oid, "all2object").data;
+	tb = div.appendChild(cDom("TABLE"));
+	arrH = ["Адрес объекта", "Свободная площадь, кв.м.", "Назначение", "Примечание", "Транспортная доступность", "Контактное лицо"];
+	
+	fillCardFromArray(tb, "Объект:", arrH, arrD[0]);
+	
+	tb = div.appendChild(cDom("TABLE"));
+	tb.style.width = "100%";
+	tr = tb.appendChild(cDom("TR"));
+	imgContainer = tr.appendChild(cDom("TD"));
+	imgContainer.id = "imgContainer";
+	imgContainer.valign = "top";
+
+	var tb = imgContainer.appendChild(cDom("TABLE"));
+	var tr = tb.appendChild(cDom("TR"));
+	tb.style.width = "100%";
+	var tdImg = tr.appendChild(cDom("TD"));
+	tdImg.setAttribute("align", "center");
+	tdImg.style.width = "100%";
+
+	var imgContainer = cDom("DIV");
+	tdImg.appendChild(imgContainer);
+
+	var imgObject = new Image();
+		
+	var label = tdImg.appendChild(cDom("LABEL"));
+	label.style.color = "#999";
+	///Фото
+	$(imgContainer)
+		.css("height", windowHeight() - 300 + "px")
+	
+
+	var objectId = val.oid;
+	if (objectId) {
+		var objectPath = "data/"+objectId+"/";
+		var imageFiles = [];
+		var otherFiles = [];
+		getHttp("scanDir.php?path="+objectPath, function(imagesJSON) {
+			var files = JSON.parse(imagesJSON);
+			var allFiles = splitObjectArray(files, {"images" : ["jpg", "png", "gif", "tif", "bmp"], "other" : []} );
+			imageFiles = allFiles.images.sort();
+			otherFiles = allFiles.other;
+		}, false);
+		
+		if (imageFiles && imageFiles.length) {
+			var imgInd = 0;
+			
+			$(imgObject).attr("src", domain+objectPath+url2cp1251(imageFiles[imgInd]));
+			$(imgObject).css("cursor", "pointer");
+			imgContainer.appendChild(imgObject);
+			
+			$(imgObject)
+				.css("max-width", "100%")
+				.css("max-height", "100%")
+				.attr("title", "кликните для перехода");
+			label.innerHTML = imageFiles[imgInd].split(".")[0];
+
+			if (parseInt($(imgObject).css("width")) / parseInt($(imgObject).css("height")) > 1) {
+				if ($(imgObject).width() > $(imgContainer).width())
+					$(imgObject).css("width", $(imgContainer).width())
+			} else {
+				if ($(imgObject).height() > $(imgContainer).height())
+					$(imgObject).css("height", $(imgContainer).height());
+			}
+			
+			imgObject.onclick = function(){
+				imgInd = (imgInd >= (imageFiles.length-1)) ? 0 : imgInd+1;
+				$(this).attr("src", domain+objectPath+url2cp1251(imageFiles[imgInd]));
+				label.innerHTML = imageFiles[imgInd].split(".")[0];
+
+			}
+		}
+	}
+	
+}
+
+function mapLoad(arrLatLon, opts, click){
+	var ObjectIcon = L.Icon.extend({
+		options: {
+			iconSize:     [40, 40],
+			iconAnchor:   [20, 40],
+			popupAnchor:  [0, -40]
+		}
+	});
+
+	var objectIcons = [
+		new ObjectIcon({iconUrl: opts && opts.marker || 'images/marker00.png'}), 
+	];
+
+	var minLat = 1000, minLon = 1000, maxLat = 0, maxLon = 0;
+	var markers = L.layerGroup();
+	var arrLat = [];
+	var arrLon = [];
+	var arrOid = [];
+	var arrZoom = [];
+	
+	$.each(arrLatLon, function(ind, value){
+		var lat = value[0];
+		var lon = value[1];
+		var oid = value[2];
+		var zoom = value[3] || 18;
+
+		minLat = Math.min(lat, minLat);
+		minLon = Math.min(lon, minLon);
+		maxLat = Math.max(lat, maxLat);
+		maxLon = Math.max(lon, maxLon);
+		
+		var icon = {icon:objectIcons[0]};
+		
+		var marker = L.marker([lat, lon], icon)
+			.addTo(markers)
+			.on("click", function(){
+				click( {"lat":lat, "lon":lon, "oid":oid} )
+			});
+
+		arrOid.push(oid);
+		arrLat.push(lat);
+		arrLon.push(lon);
+		arrZoom.push(zoom);
+
+	});
+	
+	return {
+		"markers":markers, 
+		"objects":{"oid": arrOid, "lat" : arrLat, "lon" : arrLon, "zoom" : arrZoom},
+		"bounds":{
+			"minLat":minLat, 
+			"minLon":minLon, 
+			"maxLat":maxLat, 
+			"maxLon":maxLon
+		}
+	};
+	
+}
+
+class TForm {
+	constructor(parentDom, width, height, left, top, zIndex, visible) {
+		this.dom_ = cDom("DIV");
+		parentDom = parentDom || document.body;
+		if (parentDom) parentDom.appendChild(this.dom_);
+		this.dom_.style.display = visible ? "block" : "none";
+		this.dom_.style.position = "fixed";
+		this.dom_.style.zIndex = zIndex || 100;
+		this.dom_.style.left = 0;
+		this.dom_.style.top = 0;
+		this.dom_.style.width = "100%";
+		this.dom_.style.height = "100%";
+		this.dom_.style.overflow = "hidden";
+		this.dom_.style.backgroundColor = "rgba(0,0,0,0.8)";
+		
+		this.body_ = this.dom_.appendChild(cDom("DIV"));
+		this.body_.style.position = "relative";
+		this.body_.style.backgroundColor = "#000";
+		this.body_.style.margin = "auto";
+		//this.body_.style.padding = 0;
+		this.body_.style.padding = "5px 5px 5px 5px";
+		this.body_.style.left = left || 0;
+		this.body_.style.top = top || 0;
+		this.body_.style.width = width || "90%";
+		this.body_.style.height = height || this.body_.style.height;
+		this.body_.style.boxShadow = "0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)";
+		//this.body_.style.animationName = "animatetop"; ///animate off
+		//this.body_.style.animationDuration = "0.8s"; 	 ///animate off
+		
+		this.head = cDom("DIV");
+		this.head.style.color = "#eee";
+		this.head.style.float = "right";
+		this.head.style.fontSize = "28px";
+		this.head.style.fontWeight = "bold";
+		this.head.style.cursor = "pointer";
+		this.head.style.padding = "0px 5px";
+		
+		this.span = this.head.appendChild(cDom("SPAN"));
+		this.span.innerHTML = "&times";
+
+		this.span.frm = this;
+		this.span.onclick = function() {
+			this.frm.visible = false;
+		}
+		this.body = "<br><br>";
+	}
+	
+	set visible(val) {
+		this.dom.style.display = val ? "block" : "none";
+	}
+	
+	get dom() {
+		return this.dom_;
+	}
+	
+	get body() {
+		return this.body_;
+	}
+	
+	set body(val) {
+		$(this.body_).html("");
+		$(this.body_).append(this.head);
+		$(this.body_).append("<BR><BR>");
+		$(this.body_).append(val);
+	}
+	
+	set width(val) {
+		this.body.style.width = val;
+	}
+	
+	set height(val) {
+		this.body.style.height = val;
+	}
+	
+	set top(val) {
+		this.body.style.top = val;
+	}
+	
+	set left(val) {
+		this.body.style.left = val;
+	}
+	
+	set zIndex(val) {
+		this.dom.style.zIndex = val;
+	}
+	
+}
+
+function loadPanel(arr, container, idInd, valInd, funcClick, funcOver, funcOut, iconInd, cells2row, paramsInd, polylines, latInd, lonInd, squareInd){
+	var drow;
+	var buttons = [];
+	if (cells2row) {
+		drow = container.appendChild(cDom("DIV"));
+		drow.classList.add("div-table-row");
+		drow.classList.add("alpha");
+	}
+	for (var i=0; i < arr.length; i++){
+		var row = arr[i];
+		if (!cells2row) {
+			drow = container.appendChild(cDom("DIV"));
+			drow.classList.add("div-table-row");
+			drow.classList.add("alpha");
+		}
+		var dcol = drow.appendChild(cDom("DIV"));
+		if (!cells2row) { dcol.classList.add("div-table-col") } else { dcol.style.display = "inline" };
+		dcol.classList.add("alpha");
+		dcol.style.backgroundColor = "rgba(0,0,0,0.1)";
+		var but = dcol.appendChild(cDom("BUTTON"));
+		but.oid = row[idInd];
+		but.id = "but"+but.oid;
+		but.params = row[paramsInd];
+		but.row = row;
+		but.ind = i;
+		var iconUrl = row[iconInd];
+		but.innerHTML = iconUrl ? "<img src='"+iconUrl+"' style='width:32px'>" : row[valInd] + (squareInd ? "<br>" + "("+row[squareInd]+" кв.м.)" : "");
+		but.setAttribute("title", iconUrl ? row[valInd] : "");
+		but.style.width = cells2row ? "auto" : "100%";
+		but.classList.add("alpha");
+
+		but.onclick = funcClick;
+		but.onmouseover = funcOver;
+		but.onmouseout = funcOut;
+		but.polylines = polylines;
+		buttons.push(but);
+
+		but.lat = row[latInd];
+		but.lon = row[lonInd];
+	}
+	return buttons;
+}
+
+function loadMainListOfObjects(map, cond){
+	cond = cond || "";
+	pObjects.innerHTML = "";
+	var buttons = [];
+	var objects = getOrm("select id, address, lat, lon, emptySquare from "+mainTable+" where 1=1 "+cond+" order by address", "all2object").data;
+
+	fclick = function(){
+		//console.log(this.oid);
+		map.setView([this.lat, this.lon], 18);
+		markerClickFunc(this);
+	}
+	var arr = loadPanel(objects, pObjects, 0, 1, fclick, null,null,null,null,null,null, 2,3,4);
+	buttons = buttons.concat(arr);
+
+	pObjects.buttons = buttons;
+	pObjects.style.display = "table";
+}
+
+function searchAddress(query){
+	var q = "https://geocode-maps.yandex.ru/1.x/?format=json&geocode="+query;
+	var result;
+	getHttp(q, function(data){
+		var data = data;
+		var res = data.response.GeoObjectCollection.featureMember;
+		if (res.length) {
+			var pos = res[0].GeoObject.Point.pos;
+			result = pos.split(" ");
+		}
+	}, false);
+	
+	return result;
+}
+
+function markerAddToMap(map, latlng, iconUrl, iconSize){
+	iconUrl = iconUrl || "images/marker00.png";
+	iconSize = iconSize || "32";
+	var icon = L.icon({
+		"iconUrl":iconUrl, 
+		"iconSize":[iconSize,iconSize], 
+		"iconAnchor":[Math.round(iconSize/2), Math.round(iconSize/2)]});
+	return L.marker(
+		latlng, 
+		{"icon":icon}
+	).addTo(map);
+}
+
+</script>
+
+	</head>
+	<body style="background-color:#000">
+		<div id='logo' style='position:absolute; left:1000px; top:10px; width:100px; z-index:100000; background-color:rgba(0,0,0,0.5); text-align:center; border-radius:5px; cursor:pointer' onclick="location.href='index.html'">
+			<img src='images/logo.png' width='64'/><br>
+			<label>АО "ГУОВ"<br> Свободные площади для аренды</label>
+		</div>
+		<table id="mainTable" style="width:100%; height:100%">
+			<tr>
+				<td align="center" valign="middle">
+					<div id="map" width="100%" height="100%"></div>
+				</td>
+			</tr>
+		</table>
+		<div id='pSearch' style='position:absolute; left:10px; top:100px; width:350px; background-color:rgba(0,0,0,0.5); z-index:100000' class='div-table'>
+			<input type="text" id="addressSearch" placeholder="Поиск адреса на карте" style="width:100%; color:#fff; border: 1px solid #999" class='alpha' />
+		</div>
+		<div id='pFilterEmptySquare' style='position:absolute; left:10px; top:140px; width:350px; background-color:rgba(0,0,0,0.5); z-index:100000' class='div-table'>
+			<table style="width:100%">
+			<tr>
+				<td><label>Свободные площади (кв.м.) <br>от</label></td>
+				<td><label><br>до</label></td>
+			</tr>
+			<tr>
+				<td><input type="text" id="filterEmptySquareFrom" placeholder="Площадь от (кв.м.)" style="width:100%; color:#fff; border: 1px solid #999" class='alpha' /></td>
+				<td><input type="text" id="filterEmptySquareTo" placeholder="Площадь до (кв.м.)" style="width:100%; color:#fff; border: 1px solid #999" class='alpha' /></td>
+			</tr>
+			</table>
+		</div>
+		<div id='pMain' style='position:absolute; height:600px; width:350px; left:10px; top:210px; background-color:rgba(0,0,0,0.5); z-index:100000; overflow-y:auto; overflow-x:hidden'>
+			<div id='pObjects' style='background-color:rgba(0,0,0,0); border:0px; width:100%' class='div-table'>
+			</div>
+		</div>
+
+	</body>
+</html>
