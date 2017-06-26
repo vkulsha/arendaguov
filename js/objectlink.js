@@ -8,8 +8,8 @@ var objectlink = {
 	gOrmA : function(funcName, params, func){
 		sqlOrmA({f:funcName, p:params}, func)	
 		
-	},
-}
+	}
+};
 
 
 
