@@ -20,11 +20,14 @@ $(document).ready(function(){
 		logo.style.left = windowWidth()-parseInt(logo.style.width)-5+"px";
 		
 		var map = L.map('map');
+		var addressMarker = L.marker([0, 0]);
+		addressMarker = markerAddToMap(map, [0, 0], "images/marker21.png", 64);
+
 		var pMain = gDom("pMain");
 		pMain.style.height = windowHeight()-250+"px";
 		var mapObjects = initMap(map);
 		pObjects = gDom("pObjects");
-		loadMainListOfObjects(map);
+		loadMainListOfObjects(map, null, addressMarker);
 		
 		eSearch = gDom("addressSearch");
 		eSearch.focus();
@@ -36,19 +39,17 @@ $(document).ready(function(){
 			var val = this.value || (this.id == "filterEmptySquareFrom" ? 0 : 10000000);
 			sqFrom = this.id == "filterEmptySquareFrom" ? val : sqFrom;
 			sqTo = this.id == "filterEmptySquareTo" ? val : sqTo;
-			loadMainListOfObjects(map, "and emptySquare between "+sqFrom+" and "+sqTo);
+			loadMainListOfObjects(map, "and emptySquare between "+sqFrom+" and "+sqTo, addressMarker);
 			mapObjects.markers.clearLayers();
 			mapObjects = initMap(map, "and emptySquare between "+sqFrom+" and "+sqTo);
 		}
 		filterEmptySquareFrom.onchange = funcChange;
 		filterEmptySquareTo.onchange = funcChange;
 
-		var addressMarker = L.marker([0, 0]);
-		addressMarker = markerAddToMap(map, [0, 0], "images/marker21.png", 32);
 		eSearch.onkeydown = function(e){
 			if (e.which == 13) {
 				if (this.value == "") {
-					loadMainListOfObjects(map);
+					loadMainListOfObjects(map, null, addressMarker);
 					return;
 				}
 				var coord = searchAddress(this.value);
@@ -60,7 +61,15 @@ $(document).ready(function(){
 				}
 			}
 		}
-		
+
+		var lat = $_GET("lat", "#", location.hash);
+		var lon = $_GET("lon", "#", location.hash);
+		if (lat && lon) {
+			addressMarker.setLatLng([lat, lon]);
+			addressMarker.setOpacity(1);
+			map.setView([lat, lon], 18);		
+		}
+
 })
 
 function ifn(str) {
@@ -382,14 +391,16 @@ function loadPanel(arr, container, idInd, valInd, funcClick, funcOver, funcOut, 
 	return buttons;
 }
 
-function loadMainListOfObjects(map, cond){
+function loadMainListOfObjects(map, cond, addressMarker){
 	cond = cond || "";
 	pObjects.innerHTML = "";
 	var buttons = [];
 	var objects = getOrm("select id, address, lat, lon, emptySquare from "+mainTable+" where 1=1 "+cond+" order by address", "all2object").data;
 
 	fclick = function(){
-		//console.log(this.oid);
+		console.log(addressMarker);
+		addressMarker.setLatLng([this.lat, this.lon]);
+		addressMarker.setOpacity(1);
 		map.setView([this.lat, this.lon], 18);
 		markerClickFunc(this);
 	}
@@ -421,7 +432,7 @@ function markerAddToMap(map, latlng, iconUrl, iconSize){
 	var icon = L.icon({
 		"iconUrl":iconUrl, 
 		"iconSize":[iconSize,iconSize], 
-		"iconAnchor":[Math.round(iconSize/2), Math.round(iconSize/2)]});
+		"iconAnchor":[Math.round(iconSize/2), Math.round(iconSize+iconSize/4)]});
 	return L.marker(
 		latlng, 
 		{"icon":icon}
