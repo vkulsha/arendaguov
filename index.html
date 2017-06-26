@@ -203,7 +203,7 @@ class TForm {
 		
 		this.body_ = this.dom_.appendChild(cDom("DIV"));
 		this.body_.style.position = "relative";
-		this.body_.style.backgroundColor = "#fff";
+		this.body_.style.backgroundColor = "#fbf6da";
 		this.body_.style.margin = "auto";
 		//this.body_.style.padding = 0;
 		this.body_.style.padding = "5px 5px 5px 5px";
@@ -225,6 +225,7 @@ class TForm {
 		
 		this.span = this.head.appendChild(cDom("SPAN"));
 		this.span.innerHTML = "&times";
+		this.span.style.color = "#000";
 
 		this.span.frm = this;
 		this.span.onclick = function() {
@@ -277,10 +278,10 @@ class TForm {
 </script>
 
 	</head>
-	<body style="background-color:#fff; margin-left:0px; margin-right:0px; margin-top:0px; font-family:Arial" cellpadding=0 cellspacing=0>
-		<table id="mainTable" style="width:100%; height:100%; background-color:#fff"" align="center">
-			<tr style="height:0px;"><td colspan=3 style="background-color:#fff"></td></tr>
-			<tr style="height:30px">
+	<body style="margin-left:0px; margin-right:0px; margin-top:0px; font-family:Arial" cellpadding=0 cellspacing=0>
+		<table id="mainTable" style="width:100%; height:100%; background-color:#fbf6da" align="center">
+			<tr style="height:0px;"><td colspan=3 ></td></tr>
+			<tr style="height:30px; ">
 				<td style="width:10%"></td>
 				<td align="left" valign="top">
 					<table cellpadding=10 cellspacing=5><tr>
@@ -290,9 +291,9 @@ class TForm {
 					<td>
 						<label><strong>АО &laquo;ГУОВ&raquo;</strong></label>
 					</td>
-					<td><a href="#about">Управление эксплуатации имущества</a></td>
+					<td><a href="#about">О нас</a></td>
 					<td><a href="#arenda">Аренда недвижимости</a></td>
-					<td><a href="#price">Оценка арендных ставок</a></td>
+					<!--<td><a href="#price">Оценка арендных ставок</a></td>-->
 					<td><a href="#contact">Контактная информация</a></td>
 					</tr></table>
 
@@ -302,7 +303,7 @@ class TForm {
 			<tr style="height:450px;">
 				<td colspan=3 align="center" valign="top" style="background-image:url(images/bgnd.jpg); background-repeat:repeat-x; background-position-x: center; background-color:#000; opacity:1">
 					<table style="height:100%" align="center">
-						<tr valign="middle"><td><label style="color:#fff; font-size:32px">АРЕНДА НЕДВИЖИМОСТИ ФОНДА АО &laquo;ГУОВ&raquo;</label></td></tr>
+						<tr valign="middle"><td><label style="color:#fbf6da; font-size:32px">АРЕНДА НЕДВИЖИМОСТИ ФОНДА АО &laquo;ГУОВ&raquo;</label></td></tr>
 						<!--<tr style="height:100%"><td></td></tr>
 						<tr><td align="center"><a href="map.html" style="text-decoration:none"><img src="images/bMap.png" style="height:64px"/><br><label style="color:#fff">Перейти к карте</label></a></td></tr>
 						-->
@@ -314,16 +315,16 @@ class TForm {
 				<td style="width:10%"></td>
 				<td align="left" valign="top" id="about">
 					<br>
-					<strong style="font-size:24px; color:#333">Управление эксплуатации имущества АО &laquo;ГУОВ&raquo;</strong><br><br>
-					<p>АО &laquo;Главное Управление Обустройства Войск&raquo; является главным и единственным подрядчиком Минобороны РФ по строительству и эксплуатации жилого и нежилого фонда для военных.<br>
-					Управление экплуатации имущества отвечает за эксплуатационное содержание нежилого фонда недвижимости АО "ГУОВ" и располагает обширной базой зданий и сооружений 
-					по всей России.</p>
+					<strong style="font-size:24px; color:#333">О нас</strong><br><br>
+					<p>Акционерное Общество &laquo;Главное Управление Обустройства Войск&raquo; (АО &laquo;ГУОВ&raquo;) является лидером в области строительства жилых домов, культурных, 
+					спортивных, образовательных, а также других социально-значимых и специальных объектов для нужд Министерства обороны Российской Федерации.</p>
+					<p>Одним из направлений деятельности АО &laquo;ГУОВ&raquo; является содержание, эксплуатация и передача в аренду непрофильных объектов, не участвующих в основной деятельности общества:
+					зданий, сооружений и земельных участков, находящихся в различных регионах Россифской Федерации.</p>
 					<p>Любой бизнесмен и руководитель всегда заинтересован в размещении своего офиса и базы производства в наиболее подходящих условиях с точки зрения как
 					финансовой составляющей, так и с точки зрения удобства размещения и транспортной доступности для потенциальных клиентов.</p>
 					<p>Мы предлагаем вам обширный фонд для аренды помещений, зданий и сооружений на всей территории России.</p>
 					<p>Удобный поиск и отображение информации на карте позволит вам получить полезную для Вас информацию, затратив наименьшее количество времени.</p>
-					<p>Ждем сотрудничества с Вами!</p>
-					<p>Удачи в поиске!</p>
+					<p>Надеемся на плодотворное, взаимовыгодное сотрудничество!</p>
 					
 				</td>
 				<td style="width:10%"></td>
@@ -335,17 +336,17 @@ class TForm {
 					<br><br>
 					<strong style="font-size:24px; color:#333">Аренда недвижимости</strong><br><br>
 
-					<table cellpadding=10 style="font-size:14px; background-color:#eee; width:100%">
+					<table cellpadding=10 style="font-size:14px; background-color:#d6d1b6; width:100%">
 							<tr>
 								<td colspan=2>Свобоные площади</td>
 								<td>Вид недвижимости</td>
 								<td style="width:100%"></td>
 							</tr>
 							<tr>
-								<td><input type="text" id="filterEmptySquareFrom" placeholder="Площадь от (кв.м.)" style="border: 1px solid #999" /></td>
-								<td><input type="text" id="filterEmptySquareTo" placeholder="Площадь до (кв.м.)" style="border: 1px solid #999"  /></td>
+								<td><input type="text" id="filterEmptySquareFrom" placeholder="Площадь от (кв.м.)" style="border: 1px solid #999; background-color:#fbf6da" /></td>
+								<td><input type="text" id="filterEmptySquareTo" placeholder="Площадь до (кв.м.)" style="border: 1px solid #999; background-color:#fbf6da"  /></td>
 								<td>
-									<select id="filterType" placeholder="Назначение недвижимости" style="border: 1px solid #999" class='alpha'>
+									<select id="filterType" placeholder="Назначение недвижимости" style="border: 1px solid #999; background-color:#fbf6da" class='alpha'>
 										<option value="">все</option>
 										<option value="офис">офисное</option>
 										<option value="склад">производственно-складское</option>
@@ -363,7 +364,7 @@ class TForm {
 				<td style="width:10%"></td>
 			</tr>
 
-
+<!--
 			<tr style="height:30px">
 				<td style="width:10%"></td>
 				<td align="left" valign="top" id="price">
@@ -377,7 +378,7 @@ class TForm {
 				</td>
 				<td style="width:10%"></td>
 			</tr>
-
+-->
 			<tr style="height:30px">
 				<td style="width:10%"></td>
 				<td align="left" valign="top" id="contact">
@@ -397,7 +398,7 @@ class TForm {
 			</tr>
 
 			<tr style="height:100%">
-				<td></td>
+				<td><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></td>
 			</tr>
 			
 		</table>
