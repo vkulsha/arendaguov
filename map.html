@@ -118,12 +118,15 @@ function initMap(map, cond){
 function markerClickFunc(val){
 	console.log(val.oid);
 	var div = cDom("DIV");
-
+/*
 	var frm = new TForm();
 	frm.body = div;
 	frm.top = "20px";
 	frm.zIndex = 100010;
 	frm.visible = true;
+*/
+	var frm = new TForm(null,null,null,null,20,200000,true);
+	frm.setBody(div);
 
 	var arrD = getOrm("select address, emptySquare, target, context, transport, contact from "+mainTable+" where id = "+val.oid, "all2object").data;
 	tb = div.appendChild(cDom("TABLE"));
@@ -260,6 +263,66 @@ function mapLoad(arrLatLon, opts, click){
 	
 }
 
+function TForm (parentDom, width, height, left, top, zIndex, visible){
+	var that = this;
+	var dom = cDom("DIV");
+	parentDom = parentDom || document.body;
+	if (parentDom) parentDom.appendChild(dom);
+	dom.style.display = visible ? "block" : "none";
+	dom.style.position = "fixed";
+	dom.style.zIndex = zIndex || 100;
+	dom.style.left = 0;
+	dom.style.top = 0;
+	dom.style.width = "100%";
+	dom.style.height = "100%";
+	dom.style.overflow = "hidden";
+	dom.style.backgroundColor = "rgba(0,0,0,0.8)";
+	dom.style.overflowY = "scroll";
+
+	var body = dom.appendChild(cDom("DIV"));
+	body.innerHTML = "<br><br>";
+	body.style.position = "relative";
+	body.style.backgroundColor = "#000";
+	body.style.margin = "auto";
+	body.style.padding = "5px 5px 5px 5px";
+	body.style.left = left || 0;
+	body.style.top = top || 0;
+	body.style.width = width || "90%";
+	body.style.height = height || body.style.height;
+	body.style.boxShadow = "0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)";
+	
+	var head = cDom("DIV");
+	head.style.color = "#eee";
+	head.style.float = "right";
+	head.style.fontSize = "28px";
+	head.style.fontWeight = "bold";
+	head.style.cursor = "pointer";
+	head.style.padding = "0px 5px";
+	
+	var span = head.appendChild(cDom("SPAN"));
+	span.innerHTML = "&times";
+	span.style.color = "#fff";
+	span.onclick = function() {	that.setVisible(false);	}
+	
+	this.setBody = function(val) {
+		$(body).html("");
+		$(body).append(head);
+		$(body).append("<BR><BR>");
+		$(body).append(val);
+	}
+	
+	this.setVisible = function(val) { dom.style.display = val ? "block" : "none"; }
+	this.getDom = function() { return dom; }
+	this.getBody = function() { return body; }
+	this.setWidth = function(val) {	body.style.width = val; }
+	this.setHeight = function(val) { body.style.height = val; }
+	this.setTop = function(val) { body.style.top = val; }
+	this.setLeft = function(val) { body.style.left = val; }
+	this.setZIndex = function(val) { dom.style.zIndex = val; }
+	
+}	
+
+/*
 class TForm {
 	constructor(parentDom, width, height, left, top, zIndex, visible) {
 		this.dom_ = cDom("DIV");
@@ -347,7 +410,7 @@ class TForm {
 	}
 	
 }
-
+*/
 function loadPanel(arr, container, idInd, valInd, funcClick, funcOver, funcOut, iconInd, cells2row, paramsInd, polylines, latInd, lonInd, squareInd){
 	var drow;
 	var buttons = [];

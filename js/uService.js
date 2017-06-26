@@ -28,19 +28,6 @@ var isMobile = {
     }
 };
 
-$.extend($.expr[':'], {
-  inview: function (el) {
-    var $e = $(el),
-    $w = $(window),
-    top = $e.offset().top,
-    height = $e.outerHeight(true),
-    windowTop = $w.scrollTop(),
-    windowScroll = windowTop - height,
-    windowHeight = windowTop + height + $w.height();
-    return (top > windowScroll && top < windowHeight);
-  }
-});
-
 function getBrowser(){
     var ua = navigator.userAgent;    
     if (ua.search(/Chrome/) != -1) return 'Chrome';
