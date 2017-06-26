@@ -7,13 +7,6 @@ var objectsDir = "data/objects"
 var currentUser = {};
 var months = ["январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
 
-var isIE11 = !!(navigator.userAgent.match(/Trident/) && !navigator.userAgent.match(/MSIE/)); 
-if (isIE11) {
-    if (typeof window.attachEvent == "undefined" || !window.attachEvent) {
-        window.attachEvent = window.addEventListener;
-    }
-}
-
 var isMobile = {
     Android: function() {
         return navigator.userAgent.match(/Android/i);
