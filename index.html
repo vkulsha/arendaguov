@@ -10,9 +10,11 @@
 			if (isIE11) {
 				if (typeof window.attachEvent == "undefined" || !window.attachEvent) {
 					window.attachEvent = window.addEventListener;
+					console.log(1);
 				}
 				if (typeof window.addEventListener == "undefined" || !window.addEventListener) {
 					window.addEventListener = window.attachEvent;
+					console.log(2);
 				}
 			}
 		</script>
