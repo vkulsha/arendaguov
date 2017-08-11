@@ -18,6 +18,19 @@
 $(document).ready(function(){
 	mainTable = "arenda";
 
+	$.ajax({
+	   url:'http://freegeoip.net/json/',
+	   type:'get',
+	   dataType:'json'
+	}).done(function(data) {
+		var ip = data.ip;
+		if (ip) {
+			var dt = getOrm("insert into counter (ip, d) values ('"+ip+"', CURRENT_TIMESTAMP()); ", "all2object").data;
+			//var dt = getOrm("select count(*) from arenda; ", "all2object").data;
+			//console.log(dt);
+		}
+	});
+
 	$('a[href^="#"]').on('click',function (e) {
 		e.preventDefault();
 		var target = this.hash,
